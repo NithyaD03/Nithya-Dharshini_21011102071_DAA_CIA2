@@ -1,0 +1,75 @@
+import random
+import math
+def sine_function(x, amplitude, freq, phase):
+    return amplitude * math.sin(freq * x + phase)
+def find_maximum_sine_value(l_limit, u_limit, pop_size, num_gen, mutation_rate):
+    # Define the chromosomes
+    def create_chromosome():
+        amplitude = random.uniform(0, 1)
+        freq = random.uniform(0, 1)
+        phase = random.uniform(0, math.pi)
+        return [amplitude, freq, phase]
+    
+
+    def fitness(chromosome):
+        max_value = -math.inf
+        for x in range(l_limit, u_limit + 1):
+            y = sine_function(x, chromosome[0], chromosome[1], chromosome[2])
+            if y > max_value:
+                max_value = y
+        return max_value
+    
+    
+    pop = [create_chromosome() for i in range(pop_size)]
+    
+    for gen in range(num_gen):
+        # Evaluate the fitness of each chromosome
+        fitness_values = [fitness(chromosome) for chromosome in pop]
+        
+     
+        def selection(fitness_values):
+            sum_fitness = sum(fitness_values)
+            prob = [fitness_value / sum_fitness for fitness_value in fitness_values]
+            return random.choices(pop, prob, k=2)
+        
+        def crossover(parents):
+            offspring = [0, 0, 0]
+            for i in range(3):
+                offspring[i] = (parents[0][i] + parents[1][i]) / 2
+            return offspring
+        
+        def mutation(chromosome):
+            for i in range(3):
+                if random.random() < mutation_rate:
+                    chromosome[i] = random.uniform(0, 1) if i < 2 else random.uniform(0, math.pi)
+            return chromosome
+        
+        offspring = []
+        for i in range(pop_size):
+            parents = selection(fitness_values)
+            child = crossover(parents)
+            child = mutation(child)
+            offspring.append(child)
+        
+
+        offspring_fitness_values = [fitness(chromosome) for chromosome in offspring]
+        
+
+        combined_pop = pop + offspring
+        combined_fitness_values = fitness_values + offspring_fitness_values
+        pop = [combined_pop[i] for i in random.choices(range(len(combined_pop)), combined_fitness_values, k=pop_size)]
+    
+
+    fitness_values = [fitness(chromosome) for chromosome in pop]
+    max_fitness_index = fitness_values.index(max(fitness_values))
+    return pop[max_fitness_index], max(fitness_values)
+
+l_limit = 0
+u_limit = 10
+pop_size = 20
+num_gen = 50
+mutation_rate = 0.1
+best_chromosome, max_fitness_value = find_maximum_sine_value(l_limit, u_limit, pop_size, num_gen, mutation_rate)
+
+print("Best chromosome:", best_chromosome)
+print("Maximum fitness value:", max_fitness_value)
