@@ -1,0 +1,45 @@
+import random
+import numpy as np
+
+# Define the problem
+n_cities = 10
+cities = np.random.rand(n_cities, 2)
+
+# Define the CA parameters
+n_cultures = 5
+pop_size = 20
+n_gen = 100
+mutation_rate = 0.1
+
+# Define the chromosomes
+def create_chromosome(n_cities):
+    cities = list(range(n_cities))
+    random.shuffle(cities)
+    return cities
+
+# Define the fitness function
+def evaluate_fitness(chromosome, cities):
+    dist = 0
+    for i in range(len(chromosome)):
+        j = (i + 1) % len(chromosome)
+        city_i, city_j = chromosome[i], chromosome[j]
+        dist += np.linalg.norm(cities[city_i] - cities[city_j])
+    return dist
+
+# Initialization
+pop = [[] for _ in range(n_cultures)]
+for i in range(n_cultures):
+    pop[i] = [create_chromosome(n_cities) for _ in range(pop_size)]
+
+for gen in range(n_gen):
+    # Cultural exchange
+    for i in range(n_cultures):
+        source = i
+        target = random.randint(0, n_cultures-1)
+        if target == source:
+            continue
+        best_chromosome = min(pop[source], key=lambda x: evaluate_fitness(x, cities))
+        pop[target].append(best_chromosome)
+
+    # Selection
+    new_pop = [[] for _ in range(n_cultures)]
